@@ -1,6 +1,52 @@
 # CarND-Controls-MPC
 Self-Driving Car Engineer Nanodegree Program
 
+### Intro
+
+This project contains code of MPC (model predictive control) realization for controlling car in
+simulator.
+
+## Project rubrics
+
+
+#### Model
+
+The kinematic model consists of:
+ * x coordinate;
+ * y coordinate;
+ * orientation angle (psi);
+ * velocity;
+ * cross track error;
+ * psi error.
+ 
+  The model combines the state and actuations from the previous timestep to calculate the state for the current timestep based on the equations below:
+ ![MPC state](assets/state.png)
+ 
+#### Timestep Length and Elapsed Duration (N & dt)
+
+The values chosen for N and dt are 10 and 0.1, respectively. Admittedly, this was at the suggestion of Udacity's provided office hours for the project.
+These values mean that the optimizer is considering a one-second duration in which to determine a corrective trajectory.
+
+
+#### Polynomial Fitting and MPC Preprocessing
+
+The waypoints are preprocessed by transforming them to the vehicle's perspective. This simplifies the process to fit a polynomial to the waypoints because the vehicle's x and y coordinates are now at the origin (0, 0) and the orientation angle is also zero.
+```c++
+for (int i = 0; i < ptsx.size(); i++) {
+    double dx = ptsx[i] - px;
+    double dy = ptsy[i] - py;
+    waypoints_x.push_back(dx * cos(-psi) - dy * sin(-psi));
+    waypoints_y.push_back(dx * sin(-psi) + dy * cos(-psi));
+}
+```
+
+#### Model Predictive Control with Latency
+
+Additional cost penalizing the combination velocity and delta was included (MPC.cpp line 62):
+```c++
+fg[0] += 700 * CppAD::pow(vars[delta_start + t] * vars[v_start+t], 2);
+```
+
 ---
 
 ## Dependencies
